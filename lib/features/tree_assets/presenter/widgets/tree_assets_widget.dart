@@ -9,11 +9,11 @@ class TreeAssetsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-        child: ListView.builder(
-            itemCount: nodes.length,
-            itemBuilder: (_, index) {
-              return ExpandableOption(node: nodes[index]);
-            }));
+    return ListView.builder(
+        itemCount: nodes.length,
+        shrinkWrap: true,
+        itemBuilder: (_, index) {
+          return ExpandableOption(node: nodes[index]);
+        });
   }
 }
