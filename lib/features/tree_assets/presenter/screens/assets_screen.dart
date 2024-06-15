@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_tractian_challenge/core/theme/app_colors.dart';
 import 'package:flutter_tractian_challenge/features/home/domain/entities/unity_entity.dart';
@@ -58,7 +59,9 @@ class _AssetsScreenState extends State<AssetsScreen> {
           ),
           const SizedBox(height: 8),
           Divider(color: AppColors.dividerLightGray),
-          TreeAssetsWidget(nodes: _store.nodes)
+          Observer(builder: (_) {
+            return TreeAssetsWidget(nodes: _store.nodes);
+          })
         ],
       ),
     );
