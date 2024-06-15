@@ -10,6 +10,7 @@ import 'package:flutter_tractian_challenge/features/tree_assets/presenter/widget
 
 class AssetsScreen extends StatefulWidget {
   final UnityEntity unity;
+
   const AssetsScreen({super.key, required this.unity});
 
   @override
@@ -57,7 +58,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
           ),
           const SizedBox(height: 8),
           Divider(color: AppColors.dividerLightGray),
-          TreeAssetsWidget(store: _store)
+          TreeAssetsWidget(nodes: _store.nodes)
         ],
       ),
     );

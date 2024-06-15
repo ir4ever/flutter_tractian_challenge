@@ -1,12 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_tractian_challenge/features/tree_assets/domain/entities/asset_entity.dart';
+import 'package:flutter_tractian_challenge/features/tree_assets/presenter/models/node_entity.dart';
+import 'package:flutter_tractian_challenge/features/tree_assets/presenter/widgets/tree_assets_widget.dart';
 
 class ExpandableOption extends StatefulWidget {
-  final AssetEntity asset;
+  final NodeEntity node;
 
-  const ExpandableOption({super.key, required this.asset});
+  const ExpandableOption({super.key, required this.node});
 
   @override
   State<ExpandableOption> createState() => _ExpandableOptionState();
@@ -19,7 +20,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
   Widget build(BuildContext context) {
     if (isExpanded) {
       return Column(
-        children: [_baseRow()],
+        children: [_baseRow(), const SizedBox(height: 4), TreeAssetsWidget(nodes: widget.node.children)],
       );
     }
     return _baseRow();
@@ -43,9 +44,9 @@ class _ExpandableOptionState extends State<ExpandableOption> {
                   size: 16,
                 )),
             const SizedBox(width: 6),
-            Image.asset(widget.asset.typeItem.pathIcon, height: 22),
+            Image.asset(widget.node.asset.typeItem.pathIcon, height: 22),
             const SizedBox(width: 4),
-            Text(widget.asset.name, style: Theme.of(context).textTheme.labelMedium)
+            Text(widget.node.asset.name, style: Theme.of(context).textTheme.labelMedium)
           ],
         ),
       ),
