@@ -16,6 +16,6 @@ class HomeModule extends Module {
     i.addLazySingleton(HomeStore.new);
     i.addLazySingleton(GetAllUnitiesUseCase.new);
     i.addLazySingleton<IUnityRepository>(UnityRepository.new);
-    i.addLazySingleton<IUnitDatasource>(UnityDatasouce.new);
+    i.addLazySingleton<IUnitDatasource>(UnityDatasource.new);
   }
 }
