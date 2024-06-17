@@ -60,7 +60,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
           const SizedBox(height: 8),
           Divider(color: AppColors.dividerLightGray),
           Observer(builder: (_) {
-            return TreeAssetsWidget(nodes: _store.nodes);
+            return SingleChildScrollView(child: TreeAssetsWidget(nodes: _store.nodes));
           })
         ],
       ),

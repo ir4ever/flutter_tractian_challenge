@@ -22,31 +22,42 @@ abstract class _AssetStore with Store {
   List<AssetEntity> assets = [];
 
   @computed
-  List<AssetEntity> get itens => [...locations, ...assets];
-
-  List<NodeEntity> _addNode(List<AssetEntity> assets) {
-    final roots = <NodeEntity>[];
-    var nodes = <NodeEntity>[];
-    for (final asset in assets) {
-      final externalId = asset.parentId.isNotEmpty ? asset.parentId : asset.locationId;
-      if (externalId.isNotEmpty) {
-        nodes.add(NodeEntity(asset: asset, children: []));
-      } else {
-        roots.add(NodeEntity(asset: asset, children: []));
-      }
-    }
-    return [...roots, ...nodes];
-  }
+  List<NodeEntity> get itens =>
+      [...locations, ...assets].map((asset) => NodeEntity(asset: asset, children: [])).toList();
 
   @computed
-  List<NodeEntity> get nodes {
-    var nodes = _addNode(itens);
-    log('adicionado');
-    log(nodes.map((e) => e.toString()).toList().toString());
-    nodes = _organizerNodes(nodes);
-    log('organizado');
-    log(nodes.map((e) => e.toString()).toList().toString());
-    return nodes;
+  List<NodeEntity> get nodes => _organizerNodes(itens);
+
+  @observable
+  bool isLoading = false;
+
+  @action
+  void setLoading(bool newValue) {
+    isLoading = newValue;
+  }
+
+  @action
+  Future<void> getAllLocationsByCompany(String companyId) async {
+    try {
+      setLoading(true);
+      locations = await _getAllLocationsByCompanyUseCase(companyId);
+    } catch (e) {
+      log(e.toString());
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  @action
+  Future<void> getAllAssetsByCompany(String companyId) async {
+    try {
+      setLoading(true);
+      assets = await _getAllAssetsByCompanyUseCase(companyId);
+    } catch (e) {
+      log(e.toString());
+    } finally {
+      setLoading(false);
+    }
   }
 
   List<NodeEntity> _organizerNodes(List<NodeEntity> nodes) {
@@ -85,37 +96,5 @@ abstract class _AssetStore with Store {
       if (nodeAux != null) return nodeAux;
     }
     return nodeAux;
-  }
-
-  @observable
-  bool isLoading = false;
-
-  @action
-  void setLoading(bool newValue) {
-    isLoading = newValue;
-  }
-
-  @action
-  Future<void> getAllLocationsByCompany(String companyId) async {
-    try {
-      setLoading(true);
-      locations = await _getAllLocationsByCompanyUseCase(companyId);
-    } catch (e) {
-      log(e.toString());
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  @action
-  Future<void> getAllAssetsByCompany(String companyId) async {
-    try {
-      setLoading(true);
-      assets = await _getAllAssetsByCompanyUseCase(companyId);
-    } catch (e) {
-      log(e.toString());
-    } finally {
-      setLoading(false);
-    }
   }
 }
