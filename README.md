@@ -1,15 +1,24 @@
 # flutter_tractian_challenge
 
-# Mobile Software Engineer
+### Mobile Software Engineer
 
-# Video de Funcionamento
+### Video de demonstração
+
+https://github.com/ir4ever/flutter_tractian_challenge/assets/49799475/aaa55aad-17ba-4e04-aae1-5da4c04ada58
+
+### Projeto Flutter usando:
+A arquitetura Clean Dart;
+Gestão de estado com MOBX;
+Package http para REST API;
+Flutter Modular para injeção de dependencias e rotas;
+
+### Observações
+
+Para ficar realmente de acordo com os principios propostos da arquitetura, os filtros dentro da asset_store deveriam ser desacoplados
+respeitando o SOLID e assim também serem facilmente testaveis.
+
+Fiz apenas um teste unitario afim de demonstração.
 
 
 
-### In the README
-- Include a video demonstrating the app opening for each company and selecting a filter.
-- Describe which points of the project you would improve if you had more time.
 
-### Extra
-You may use libraries for anything you find essential, **except** for the Asset Tree and the UI.
-In this challenge, performance and usability count as **bonus** points.
