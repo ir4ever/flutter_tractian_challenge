@@ -22,9 +22,11 @@ class _ExpandableOptionState extends State<ExpandableOption> {
 
   bool get canExpanded => widget.node.children.isNotEmpty;
 
-  bool get linkLine => !canExpanded && asset.typeItem == TypeItemEnum.COMPONENT;
+  bool get linkLine => !canExpanded && asset.typeItem == TypeItemEnum.COMPONENT && !asset.isRoot;
 
   AssetEntity get asset => widget.node.asset;
+
+  double get endSizeLine => widget.node.children.last.asset.typeItem == TypeItemEnum.COMPONENT ? 20 : 18;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
       children: [
         _baseRow(),
         CustomPaint(
-          foregroundPainter: PathLinePainter(),
+          foregroundPainter: PathLinePainter(endSize: endSizeLine),
           child: Column(
             children: [
               const SizedBox(height: 4),
@@ -52,7 +54,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
   }
 
   Widget _baseRow() {
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         if (canExpanded) {
           setState(() {
@@ -87,7 +89,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
   }
 
   Widget _arrowWidget() {
-    if (!canExpanded && asset.typeItem != TypeItemEnum.COMPONENT) {
+    if (!canExpanded && (asset.typeItem != TypeItemEnum.COMPONENT || asset.isRoot)) {
       return const SizedBox.shrink();
     }
     if (linkLine) {

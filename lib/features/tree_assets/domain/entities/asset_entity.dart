@@ -21,6 +21,8 @@ class AssetEntity {
     required this.status,
   });
 
+  bool get isRoot => parentId.isEmpty && locationId.isEmpty;
+
   TypeItemEnum get typeItem {
     if (parentId.isEmpty && locationId.isEmpty && gatewayId.isEmpty) {
       return TypeItemEnum.LOCATION;
