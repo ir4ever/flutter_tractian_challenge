@@ -10,3 +10,5 @@ enum TypeItemEnum {
 
   const TypeItemEnum({required this.typeName, required this.pathIcon});
 }
+
+enum AssetStatusEnum { ON, OFF }

@@ -1,4 +1,4 @@
-import 'package:flutter_tractian_challenge/core/enuns/type_item_enum.dart';
+import 'package:flutter_tractian_challenge/core/enuns/assets_enum.dart';
 
 class AssetEntity {
   final String gatewayId;
@@ -22,18 +22,26 @@ class AssetEntity {
   });
 
   TypeItemEnum get typeItem {
-    if (status.isNotEmpty && parentId.isNotEmpty) {
-      return TypeItemEnum.SUBASSET;
+    if (parentId.isEmpty && locationId.isEmpty && gatewayId.isEmpty) {
+      return TypeItemEnum.LOCATION;
     }
-    if (parentId.isNotEmpty) {
+    if (parentId.isNotEmpty && locationId.isEmpty && gatewayId.isEmpty) {
       return TypeItemEnum.SUBLOCATION;
     }
     if (sensorType.isNotEmpty) {
       return TypeItemEnum.COMPONENT;
     }
-    if (status.isNotEmpty) {
+    if (parentId.isEmpty) {
       return TypeItemEnum.ASSET;
     }
-    return TypeItemEnum.LOCATION;
+    return TypeItemEnum.SUBASSET;
+  }
+
+  AssetStatusEnum? get assetStatus {
+    if (status.isEmpty) return null;
+    if (status == 'operating') {
+      return AssetStatusEnum.ON;
+    }
+    return AssetStatusEnum.OFF;
   }
 }
