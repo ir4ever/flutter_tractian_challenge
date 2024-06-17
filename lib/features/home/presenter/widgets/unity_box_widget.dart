@@ -21,7 +21,7 @@ class UnityBoxWidget extends StatelessWidget {
           children: [
             Image.asset('assets/icons/boxes.png', height: 24, color: AppColors.white),
             const SizedBox(width: 16),
-            Text(unity.name, style: Theme.of(context).textTheme.titleMedium)
+            Text('${unity.name} Unit', style: Theme.of(context).textTheme.titleMedium)
           ],
         ),
       ),

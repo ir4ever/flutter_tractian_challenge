@@ -23,6 +23,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
 
   @override
   void initState() {
+    _store.initializeValues();
     _store.getAllLocationsByCompany(widget.unity.id);
     _store.getAllAssetsByCompany(widget.unity.id);
     super.initState();
@@ -48,11 +49,17 @@ class _AssetsScreenState extends State<AssetsScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
               children: [
-                const CustomTextFieldWidget(),
+                CustomTextFieldWidget(
+                  onChanged: (name) {
+                    _store.setNameToSearch(name);
+                  },
+                ),
                 const SizedBox(height: 8),
                 FilterAssetsWidget(
                   options: filterOptions,
-                  onChanged: (option) {},
+                  onChanged: (option) {
+                    _store.setStatusFilter(option.status);
+                  },
                 )
               ],
             ),
@@ -60,11 +67,23 @@ class _AssetsScreenState extends State<AssetsScreen> {
           const SizedBox(height: 8),
           Divider(color: AppColors.dividerLightGray),
           Expanded(
-            child: SingleChildScrollView(
-              child: Observer(builder: (_) {
-                return TreeAssetsWidget(nodes: _store.nodes);
-              }),
-            ),
+            child: Observer(builder: (_) {
+              if (_store.isLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final nodes = _store.nodes;
+              if (nodes.isEmpty) {
+                final message = _store.isFiltered
+                    ? 'Não encontramos nenhum Asset ou Local com esse(s) filtro(s).'
+                    : 'Ops... Essa unidade não tem nenhum Asset ou Local disponível no momento!';
+                return Padding(
+                  padding: const EdgeInsets.all(32.0),
+                  child: Text(message, style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.center),
+                );
+              }
+              return SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(), child: TreeAssetsWidget(nodes: nodes));
+            }),
           )
         ],
       ),

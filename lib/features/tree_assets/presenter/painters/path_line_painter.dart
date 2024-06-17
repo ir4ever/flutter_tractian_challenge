@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tractian_challenge/core/theme/app_colors.dart';
 
 class PathLinePainter extends CustomPainter {
   final double endSize;
@@ -7,8 +8,9 @@ class PathLinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (size.height <= 16) return;
     final paint = Paint()
-      ..color = Colors.black.withOpacity(.06)
+      ..color = AppColors.lineGray
       ..strokeWidth = 1
       ..strokeCap = StrokeCap.round;
 
@@ -20,6 +22,6 @@ class PathLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }

@@ -15,4 +15,5 @@ class AppColors {
 
   static get borderLightGray => const Color(0xffD8DFE6);
   static get dividerLightGray => const Color(0xffEAEEF2);
+  static get lineGray => const Color(0xff000000).withOpacity(.06);
 }

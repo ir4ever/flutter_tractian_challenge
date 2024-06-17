@@ -11,4 +11,11 @@ enum TypeItemEnum {
   const TypeItemEnum({required this.typeName, required this.pathIcon});
 }
 
-enum AssetStatusEnum { ON, OFF }
+enum AssetStatusEnum {
+  OPERATING(nameStatus: 'operating'),
+  ALERT(nameStatus: 'alert');
+
+  final String nameStatus;
+
+  const AssetStatusEnum({required this.nameStatus});
+}

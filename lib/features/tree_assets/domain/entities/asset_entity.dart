@@ -42,8 +42,8 @@ class AssetEntity {
   AssetStatusEnum? get assetStatus {
     if (status.isEmpty) return null;
     if (status == 'operating') {
-      return AssetStatusEnum.ON;
+      return AssetStatusEnum.OPERATING;
     }
-    return AssetStatusEnum.OFF;
+    return AssetStatusEnum.ALERT;
   }
 }

@@ -8,16 +8,15 @@ import 'package:flutter_tractian_challenge/features/tree_assets/presenter/models
 import 'package:flutter_tractian_challenge/features/tree_assets/presenter/painters/path_line_painter.dart';
 import 'package:flutter_tractian_challenge/features/tree_assets/presenter/widgets/tree_assets_widget.dart';
 
-class ExpandableOption extends StatefulWidget {
+class ExpandableAssetWidget extends StatefulWidget {
   final NodeEntity node;
-
-  const ExpandableOption({super.key, required this.node});
+  const ExpandableAssetWidget({super.key, required this.node});
 
   @override
-  State<ExpandableOption> createState() => _ExpandableOptionState();
+  State<ExpandableAssetWidget> createState() => _ExpandableAssetWidgetState();
 }
 
-class _ExpandableOptionState extends State<ExpandableOption> {
+class _ExpandableAssetWidgetState extends State<ExpandableAssetWidget> {
   bool isExpanded = false;
 
   bool get canExpanded => widget.node.children.isNotEmpty;
@@ -26,7 +25,8 @@ class _ExpandableOptionState extends State<ExpandableOption> {
 
   AssetEntity get asset => widget.node.asset;
 
-  double get endSizeLine => widget.node.children.last.asset.typeItem == TypeItemEnum.COMPONENT ? 20 : 18;
+  double get endSizeLine =>
+      widget.node.children.isNotEmpty && widget.node.children.last.asset.typeItem == TypeItemEnum.COMPONENT ? 20 : 18;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
       children: [
         _baseRow(),
         CustomPaint(
-          foregroundPainter: PathLinePainter(endSize: endSizeLine),
+          painter: PathLinePainter(endSize: endSizeLine),
           child: Column(
             children: [
               const SizedBox(height: 4),
@@ -82,7 +82,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
     if (asset.typeItem != TypeItemEnum.COMPONENT || asset.assetStatus == null) {
       return const SizedBox.shrink();
     }
-    if (asset.assetStatus == AssetStatusEnum.ON) {
+    if (asset.assetStatus == AssetStatusEnum.OPERATING) {
       return Icon(Icons.flash_on, color: AppColors.green, size: 12);
     }
     return Icon(Icons.circle, color: AppColors.red, size: 12);
@@ -96,7 +96,7 @@ class _ExpandableOptionState extends State<ExpandableOption> {
       return Container(
         height: 1,
         width: 15,
-        color: AppColors.lightGray,
+        color: AppColors.lineGray,
         margin: const EdgeInsets.only(right: 4),
       );
     }

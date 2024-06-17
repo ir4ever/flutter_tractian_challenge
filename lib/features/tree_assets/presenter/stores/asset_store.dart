@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter_tractian_challenge/core/enuns/assets_enum.dart';
 import 'package:flutter_tractian_challenge/features/tree_assets/domain/entities/asset_entity.dart';
 import 'package:flutter_tractian_challenge/features/tree_assets/domain/use_cases/get_all_assets_by_company_use_ase.dart';
 import 'package:flutter_tractian_challenge/features/tree_assets/domain/use_cases/get_all_locations_by_company_use_ase.dart.dart';
@@ -14,26 +15,67 @@ abstract class _AssetStore with Store {
   final GetAllLocationsByCompanyUseCase _getAllLocationsByCompanyUseCase;
   final GetAllAssetsByCompanyUseCase _getAllAssetsByCompanyUseCase;
 
-  _AssetStore(this._getAllLocationsByCompanyUseCase, this._getAllAssetsByCompanyUseCase);
+  _AssetStore(
+    this._getAllLocationsByCompanyUseCase,
+    this._getAllAssetsByCompanyUseCase,
+  );
 
   @observable
   List<AssetEntity> locations = [];
   @observable
   List<AssetEntity> assets = [];
-
-  @computed
-  List<NodeEntity> get itens =>
-      [...locations, ...assets].map((asset) => NodeEntity(asset: asset, children: [])).toList();
-
-  @computed
-  List<NodeEntity> get nodes => _organizerNodes(itens);
+  @observable
+  AssetStatusEnum? _statusToSearch;
+  @observable
+  String _nameToSearch = '';
 
   @observable
   bool isLoading = false;
 
+  List<NodeEntity> get items => _organizeNodes(
+        [...locations, ...assets].map((asset) => NodeEntity(asset: asset, children: [])).toList(),
+      );
+
+  @computed
+  List<NodeEntity> get nodes {
+    if (_statusToSearch != null && _nameToSearch.isNotEmpty) {
+      return _getNodesByName(_getNodesByStatus(items));
+    }
+    if (_statusToSearch != null) {
+      return _getNodesByStatus(items);
+    }
+    if (_nameToSearch.isNotEmpty) {
+      return _getNodesByName(items);
+    }
+    return items;
+  }
+
+  @computed
+  bool get isFiltered => _statusToSearch != null || _nameToSearch.isNotEmpty;
+
+  @action
+  void initializeValues() {
+    _nameToSearch = '';
+    _statusToSearch = null;
+  }
+
   @action
   void setLoading(bool newValue) {
     isLoading = newValue;
+  }
+
+  @action
+  void setStatusFilter(AssetStatusEnum newValue) {
+    if (newValue == _statusToSearch) {
+      _statusToSearch = null;
+      return;
+    }
+    _statusToSearch = newValue;
+  }
+
+  @action
+  void setNameToSearch(String newValue) {
+    _nameToSearch = newValue;
   }
 
   @action
@@ -60,41 +102,104 @@ abstract class _AssetStore with Store {
     }
   }
 
-  List<NodeEntity> _organizerNodes(List<NodeEntity> nodes) {
+  List<NodeEntity> _organizeNodes(List<NodeEntity> nodes) {
     final assets = <NodeEntity>[];
-    final List<int> indexesToRemove = [];
-    for (var i = 0; i < nodes.length; i++) {
-      var node = nodes[i];
+    final nodesToRemove = <NodeEntity>[];
+
+    for (var node in nodes) {
       final externalId = node.asset.parentId.isNotEmpty ? node.asset.parentId : node.asset.locationId;
       if (externalId.isNotEmpty) {
-        final index = nodes.indexWhere((assetId) => assetId.id == externalId);
-        if (index == -1) {
+        final parentIndex = nodes.indexWhere((n) => n.asset.id == externalId);
+        if (parentIndex == -1) {
           node = _addChild(externalId, node) ?? node;
         } else {
-          nodes[index].children.add(node);
-          indexesToRemove.add(i);
+          nodes[parentIndex].children.add(node);
+          nodesToRemove.add(node);
         }
       }
       assets.add(node);
     }
 
-    for (var i = indexesToRemove.length - 1; i >= 0; i--) {
-      final indexToRemove = indexesToRemove[i];
-      assets.removeAt(indexToRemove);
+    for (final node in nodesToRemove) {
+      assets.remove(node);
     }
+
     return assets;
   }
 
+  List<NodeEntity> _getNodesByStatus(List<NodeEntity> nodes) {
+    final nodesByStatus = <NodeEntity>[];
+
+    for (var node in nodes) {
+      if (_searchStatusInNodes(node, _statusToSearch!)) {
+        nodesByStatus.add(node);
+      }
+    }
+
+    return nodesByStatus;
+  }
+
+  bool _searchStatusInNodes(NodeEntity nodeParent, AssetStatusEnum status) {
+    final nodesToRemove = <NodeEntity>[];
+    bool found = false;
+    if (nodeParent.asset.status == status.nameStatus && nodeParent.asset.typeItem == TypeItemEnum.COMPONENT) {
+      found = true;
+    }
+    for (final node in nodeParent.children) {
+      if (_searchStatusInNodes(node, status)) {
+        found = true;
+      } else {
+        nodesToRemove.add(node);
+      }
+    }
+    for (final node in nodesToRemove) {
+      nodeParent.children.remove(node);
+    }
+    return found;
+  }
+
+  List<NodeEntity> _getNodesByName(List<NodeEntity> nodes) {
+    final nodesByName = <NodeEntity>[];
+
+    for (var node in nodes) {
+      if (_searchNameInNodes(node, _nameToSearch)) {
+        nodesByName.add(node);
+      }
+    }
+
+    return nodesByName;
+  }
+
+  bool _searchNameInNodes(NodeEntity nodeParent, String name) {
+    final nodesToRemove = <NodeEntity>[];
+    bool found = false;
+
+    final nameToSearch = name.toLowerCase();
+    final assetName = nodeParent.asset.name.toLowerCase();
+
+    if (assetName.contains(nameToSearch)) {
+      found = true;
+    }
+    for (final node in nodeParent.children) {
+      if (_searchNameInNodes(node, name)) {
+        found = true;
+      } else {
+        nodesToRemove.add(node);
+      }
+    }
+    for (final node in nodesToRemove) {
+      nodeParent.children.remove(node);
+    }
+    return found;
+  }
+
   NodeEntity? _addChild(String parentId, NodeEntity nodeParent) {
-    NodeEntity? nodeAux;
-    for (var node in nodeParent.children) {
+    for (final node in nodeParent.children) {
       if (node.id == parentId) {
         node.children.add(nodeParent);
         return node;
       }
-      nodeAux = _addChild(parentId, node);
-      if (nodeAux != null) return nodeAux;
     }
-    return nodeAux;
+    return null;
   }
 }

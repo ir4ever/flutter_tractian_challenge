@@ -17,4 +17,22 @@ class NodeEntity {
   String toString() {
     return '{"id": "$id.", "children": $children}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NodeEntity && runtimeType == other.runtimeType && asset == other.asset && children == other.children;
+
+  @override
+  int get hashCode => asset.hashCode ^ children.hashCode;
+
+  NodeEntity copyWith({
+    AssetEntity? asset,
+    List<NodeEntity>? children,
+  }) {
+    return NodeEntity(
+      asset: asset ?? this.asset,
+      children: children ?? this.children,
+    );
+  }
 }

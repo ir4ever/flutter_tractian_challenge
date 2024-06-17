@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tractian_challenge/core/theme/app_colors.dart';
 
-class CustomTextFieldWidget extends StatefulWidget {
-  const CustomTextFieldWidget({super.key});
+class CustomTextFieldWidget extends StatelessWidget {
+  final Function(String) onChanged;
 
-  @override
-  State<CustomTextFieldWidget> createState() => _CustomTextFieldWidgetState();
-}
+  const CustomTextFieldWidget({super.key, required this.onChanged});
 
-class _CustomTextFieldWidgetState extends State<CustomTextFieldWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 36,
       child: TextField(
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.gray),
+          onChanged: onChanged,
+          cursorHeight: 18,
           decoration: InputDecoration(
-              labelText: 'Buscar Ativo ou Local',
+              hintText: 'Buscar Ativo ou Local',
               filled: true,
               fillColor: AppColors.lightGray,
               prefixIconConstraints: const BoxConstraints.tightForFinite(width: 42),
@@ -32,7 +31,7 @@ class _CustomTextFieldWidgetState extends State<CustomTextFieldWidget> {
                 borderSide: BorderSide.none,
                 borderRadius: BorderRadius.circular(4),
               ),
-              labelStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.gray),
+              hintStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.gray),
               contentPadding: EdgeInsets.zero)),
     );
   }
