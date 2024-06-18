@@ -22,32 +22,35 @@ abstract class _AssetStore with Store {
 
   @observable
   List<AssetEntity> locations = [];
+
   @observable
   List<AssetEntity> assets = [];
+
   @observable
   AssetStatusEnum? _statusToSearch;
+
   @observable
   String _nameToSearch = '';
 
   @observable
   bool isLoading = false;
 
-  List<NodeEntity> get items => _organizeNodes(
-        [...locations, ...assets].map((asset) => NodeEntity(asset: asset, children: [])).toList(),
-      );
+  Map<String, NodeEntity> get nodesMap => {
+        for (var asset in [...locations, ...assets]) asset.id: NodeEntity(asset: asset, children: [])
+      };
+
+  List<NodeEntity> get organizedNodes => _organizeNodes(nodesMap);
 
   @computed
   List<NodeEntity> get nodes {
-    if (_statusToSearch != null && _nameToSearch.isNotEmpty) {
-      return _getNodesByName(_getNodesByStatus(items));
-    }
+    List<NodeEntity> filteredNodes = organizedNodes;
     if (_statusToSearch != null) {
-      return _getNodesByStatus(items);
+      filteredNodes = _getNodesByStatus(filteredNodes);
     }
     if (_nameToSearch.isNotEmpty) {
-      return _getNodesByName(items);
+      filteredNodes = _getNodesByName(filteredNodes);
     }
-    return items;
+    return filteredNodes;
   }
 
   @computed
@@ -66,11 +69,7 @@ abstract class _AssetStore with Store {
 
   @action
   void setStatusFilter(AssetStatusEnum newValue) {
-    if (newValue == _statusToSearch) {
-      _statusToSearch = null;
-      return;
-    }
-    _statusToSearch = newValue;
+    _statusToSearch = _statusToSearch == newValue ? null : newValue;
   }
 
   @action
@@ -102,104 +101,60 @@ abstract class _AssetStore with Store {
     }
   }
 
-  List<NodeEntity> _organizeNodes(List<NodeEntity> nodes) {
-    final assets = <NodeEntity>[];
-    final nodesToRemove = <NodeEntity>[];
+  List<NodeEntity> _organizeNodes(Map<String, NodeEntity> nodeMap) {
+    final Set<String> idsToRemove = {}; //para remover depois os itens que ja foram adicionados como filhos
 
-    for (var node in nodes) {
-      final externalId = node.asset.parentId.isNotEmpty ? node.asset.parentId : node.asset.locationId;
-      if (externalId.isNotEmpty) {
-        final parentIndex = nodes.indexWhere((n) => n.asset.id == externalId);
-        if (parentIndex == -1) {
-          node = _addChild(externalId, node) ?? node;
-        } else {
-          nodes[parentIndex].children.add(node);
-          nodesToRemove.add(node);
-        }
+    for (var node in nodeMap.values) {
+      final externalId =
+          node.asset.parentId.isNotEmpty ? node.asset.parentId : node.asset.locationId; //defini se node tem um pai
+      if (externalId.isNotEmpty && nodeMap.containsKey(externalId)) {
+        nodeMap[externalId]!.children.add(node);
+        idsToRemove.add(node.asset.id);
       }
-      assets.add(node);
     }
 
-    for (final node in nodesToRemove) {
-      assets.remove(node);
-    }
-
-    return assets;
+    return nodeMap.values.where((node) => !idsToRemove.contains(node.asset.id)).toList(); //remove os itens repetidos
   }
 
   List<NodeEntity> _getNodesByStatus(List<NodeEntity> nodes) {
-    final nodesByStatus = <NodeEntity>[];
-
-    for (var node in nodes) {
-      if (_searchStatusInNodes(node, _statusToSearch!)) {
-        nodesByStatus.add(node);
-      }
-    }
-
-    return nodesByStatus;
+    return nodes.where((node) => _filterNodesByStatus(node, _statusToSearch!)).toList();
   }
 
-  bool _searchStatusInNodes(NodeEntity nodeParent, AssetStatusEnum status) {
+  bool _filterNodesByStatus(NodeEntity node, AssetStatusEnum status) {
     final nodesToRemove = <NodeEntity>[];
     bool found = false;
-    if (nodeParent.asset.status == status.nameStatus && nodeParent.asset.typeItem == TypeItemEnum.COMPONENT) {
+    if (node.asset.status == status.nameStatus && node.asset.typeItem == TypeItemEnum.COMPONENT) {
       found = true;
     }
-    for (final node in nodeParent.children) {
-      if (_searchStatusInNodes(node, status)) {
-        found = true;
+    for (final node in node.children) {
+      if (_filterNodesByStatus(node, status)) {
+        found = true; //permito toda a execucão para limpar os campos que nao tem o status desejado
       } else {
         nodesToRemove.add(node);
       }
     }
-    for (final node in nodesToRemove) {
-      nodeParent.children.remove(node);
-    }
+
+    node.children.removeWhere(nodesToRemove.contains);
     return found;
   }
 
   List<NodeEntity> _getNodesByName(List<NodeEntity> nodes) {
-    final nodesByName = <NodeEntity>[];
-
-    for (var node in nodes) {
-      if (_searchNameInNodes(node, _nameToSearch)) {
-        nodesByName.add(node);
-      }
-    }
-
-    return nodesByName;
+    return nodes.where((node) => _filterNodesByName(node, _nameToSearch)).toList();
   }
 
-  bool _searchNameInNodes(NodeEntity nodeParent, String name) {
+  bool _filterNodesByName(NodeEntity node, String name) {
     final nodesToRemove = <NodeEntity>[];
-    bool found = false;
+    bool found = node.asset.name.toLowerCase().contains(name.toLowerCase());
 
-    final nameToSearch = name.toLowerCase();
-    final assetName = nodeParent.asset.name.toLowerCase();
-
-    if (assetName.contains(nameToSearch)) {
-      found = true;
-    }
-    for (final node in nodeParent.children) {
-      if (_searchNameInNodes(node, name)) {
-        found = true;
+    for (final child in node.children) {
+      if (_filterNodesByName(child, name)) {
+        found = true; //permito toda a execucão para limpar os campos que nao contem o nome buscado
       } else {
-        nodesToRemove.add(node);
+        nodesToRemove.add(child);
       }
     }
-    for (final node in nodesToRemove) {
-      nodeParent.children.remove(node);
-    }
-    return found;
-  }
 
-  NodeEntity? _addChild(String parentId, NodeEntity nodeParent) {
-    for (final node in nodeParent.children) {
-      if (node.id == parentId) {
-        node.children.add(nodeParent);
-        return node;
-      }
-    }
-    return null;
+    node.children.removeWhere(nodesToRemove.contains);
+    return found;
   }
 }
